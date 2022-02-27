@@ -93,6 +93,7 @@ export const RepoNav: React.FC = () => {
               size="small"
               color="primary"
               variant="contained"
+              onClick={handleCloseModal}
             />
             <Button
               label="Ok"

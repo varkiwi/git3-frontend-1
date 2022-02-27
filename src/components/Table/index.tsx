@@ -32,7 +32,7 @@ export const Table: React.FC<TableProps> = (props) => {
 
   return (
     <TableContainer component={Paper}>
-      <CustomizedTable sx={{ minWidth: 650 }} aria-label="simple table">
+      <CustomizedTable>
         <TableHead>
           <TableRow>
             <TableCell>Name</TableCell>

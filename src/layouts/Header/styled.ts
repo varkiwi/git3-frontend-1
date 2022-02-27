@@ -8,5 +8,23 @@ export const CustomizedAppBar = styled(AppBar)(
         height: 60px;
         cursor: pointer;
     }
+    .MuiIconButton-root {
+      display: none;
+    }
+
+    @media only screen and (max-width: 560px) {
+      .MuiToolbar-root {
+        padding:0;
+      }
+      .MuiButton-root {
+        padding: 8px 11px;
+      }
+      .MuiIconButton-root {
+        display: block;
+      }
+      .MuiAutocomplete-root {
+        display: none;
+      }
+    }
   `,
 );

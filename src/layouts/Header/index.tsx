@@ -1,6 +1,6 @@
 import * as React from "react";
 import { CustomizedAppBar } from "./styled";
-import { Box, Toolbar } from "@mui/material";
+import { Box, IconButton, Menu, MenuItem, Toolbar } from "@mui/material";
 import { Search } from "components/Search";
 import { Button } from "components/Button";
 import Web3Modal from "web3modal";
@@ -8,11 +8,16 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useHistory } from "react-router-dom";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import { useState } from "react";
+import MenuIcon from "@mui/icons-material/Menu";
 
 const git3Logo = require("../../assets/img/git3Logo.png");
 
 export const Header: React.FC = () => {
   const history = useHistory();
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
+    null,
+  );
+
   const providerOptions = {
     walletconnect: {
       package: WalletConnectProvider,
@@ -49,6 +54,14 @@ export const Header: React.FC = () => {
     history.push("/");
   };
 
+  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNav(event.currentTarget);
+  };
+
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
+  };
+
   return (
     <CustomizedAppBar position="static">
       <Toolbar>
@@ -67,7 +80,31 @@ export const Header: React.FC = () => {
             onClick={showModal}
           />
         </Box>
+        <IconButton size="large" onClick={handleOpenNavMenu}>
+          <MenuIcon />
+        </IconButton>
       </Toolbar>
+      <Menu
+        anchorEl={anchorElNav}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        keepMounted
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        open={Boolean(anchorElNav)}
+        onClose={handleCloseNavMenu}
+        sx={{
+          display: { xs: "block", md: "none" },
+        }}
+      >
+        <MenuItem>
+          <Search />
+        </MenuItem>
+      </Menu>
     </CustomizedAppBar>
   );
 };
