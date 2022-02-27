@@ -1,0 +1,27 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+
+$bg-color: yellow;
+$border-color: red;
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  display: flex;
+  font-family: helvetica, arial, sans-serif;
+  padding: 2em;
+  border: 5px solid $border-color;
+
+  p {
+    background-color: $bg-color;
+  }
+}
+
+#root {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: auto 1fr;
+}
