@@ -9,7 +9,13 @@ import { Paper } from "@mui/material";
 import * as React from "react";
 import { CustomizedTimeline } from "./styled";
 
-export const Timeline: React.FC = () => {
+interface TimelineProps {
+  text: string;
+}
+
+export const Timeline: React.FC<TimelineProps> = (props) => {
+  const { text } = props;
+
   return (
     <CustomizedTimeline>
       <TimelineItem>
@@ -18,12 +24,7 @@ export const Timeline: React.FC = () => {
           <TimelineConnector />
         </TimelineSeparator>
         <TimelineContent>
-          <Paper>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Totam id
-            quos eveniet facilis quia ipsam. Animi voluptas et nostrum
-            doloremque officia voluptatibus! Mollitia dolores delectus, numquam
-            libero perferendis optio voluptatem?
-          </Paper>
+          <Paper>{text}</Paper>
         </TimelineContent>
       </TimelineItem>
       <TimelineItem>

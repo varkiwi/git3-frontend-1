@@ -9,5 +9,10 @@ export const AppContainer = styled("div")(
     .MuiBox-root > * {
       text-align: center;
     }
+    @media only screen and (max-width: 560px) {
+      & {
+        padding: 24px 16px;
+      }
+    }
   `,
 );

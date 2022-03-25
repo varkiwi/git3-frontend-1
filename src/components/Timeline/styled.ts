@@ -4,6 +4,9 @@ import { styled } from "@mui/material";
 export const CustomizedTimeline = styled(Timeline)(
   ({ theme }) => `
     align-items: flex-start;
+    .MuiTimelineItem-root {
+      width: 100%;
+    }
     .MuiTimelineItem-root:before {
       flex: 0;
     }

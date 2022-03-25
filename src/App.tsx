@@ -10,29 +10,51 @@ import { Dashboard } from "pages/Dashboard";
 import { Code } from "pages/Code";
 import { Issue } from "pages/Issue";
 import { RepoNav } from "layouts/RepoNav";
-import { NewIssue } from "pages/NewIssue";
-import { PreviewIssue } from "pages/PreviewIssue";
+import { WalletContainer } from "containers/WalletContainer";
+import { NewIssue } from "pages/Issue/subpages/NewIssue";
+import { PreviewIssue } from "pages/Issue/subpages/PreviewIssue";
 
 class App extends React.Component<Record<string, unknown>, undefined> {
   public render() {
     return (
       <GitContainer.Provider>
-        <ThemeProvider theme={defaultTheme}>
-          <Router>
-            <Header />
-            <AppContainer>
-              <RepoNav />
-              <Switch>
-                <Route exact path="/" component={Dashboard} />
-                <Route exact path="/repo" component={Code} />
-                <Route exact path="/repo/:name" component={Code} />
-                <Route exact path="/issues" component={Issue} />
-                <Route exact path="/issues/new" component={NewIssue} />
-                <Route exact path="/issues/:id" component={PreviewIssue} />
-              </Switch>
-            </AppContainer>
-          </Router>
-        </ThemeProvider>
+        <WalletContainer.Provider>
+          <ThemeProvider theme={defaultTheme}>
+            <Router>
+              <Header />
+              <AppContainer>
+                <RepoNav />
+                <Switch>
+                  <Route exact path="/" component={Dashboard} />
+                  <Route
+                    path="/:repoAddress/:repoName/repo"
+                    render={() => <Code />}
+                  />
+                  <Route
+                    exact
+                    path="/:repoAddress/:repoName/repo/:file"
+                    component={Code}
+                  />
+                  <Route
+                    exact
+                    path="/:repoAddress/:repoName/issues"
+                    component={Issue}
+                  />
+                  <Route
+                    exact
+                    path="/:repoAddress/:repoName/issues/new"
+                    component={NewIssue}
+                  />
+                  <Route
+                    exact
+                    path="/:repoAddress/:repoName/issues/:id"
+                    component={PreviewIssue}
+                  />
+                </Switch>
+              </AppContainer>
+            </Router>
+          </ThemeProvider>
+        </WalletContainer.Provider>
       </GitContainer.Provider>
     );
   }

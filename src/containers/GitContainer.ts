@@ -1,15 +1,16 @@
 import { ethers } from "ethers";
 import { createContainer } from "unstated-next";
 import gitFactoryJson from "../assets/contracts/GitFactory.sol/GitFactory.json";
-// import IpfsHttpClientLite from 'ipfs-http-client-lite';
+import { create } from "ipfs-http-client";
 
 interface GitState {
   gitFactory: any;
+  ipfsClient: any;
 }
 
 export const GitContainer = createContainer<GitState>(() => {
   const provider = new ethers.providers.JsonRpcProvider(
-    "https://matic-mumbai.chainstacklabs.com"
+    "https://matic-mumbai.chainstacklabs.com",
   );
 
   const gitFactoryAbi = gitFactoryJson.abi;
@@ -17,11 +18,17 @@ export const GitContainer = createContainer<GitState>(() => {
   const gitFactory = new ethers.Contract(
     gitFactoryAddress,
     gitFactoryAbi,
-    provider
+    provider,
   );
-  // const ipfsClient = IpfsHttpClientLite(process.env.VUE_APP_IPFS_ENDPOINT);
+
+  const ipfsClient = create({
+    host: "ipfs.infura.io",
+    port: 5001,
+    protocol: "https",
+  });
 
   return {
     gitFactory,
+    ipfsClient,
   };
 });

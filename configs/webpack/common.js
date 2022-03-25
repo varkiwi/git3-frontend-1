@@ -2,6 +2,7 @@
 const { resolve } = require("path");
 const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const Dotenv = require("dotenv-webpack");
 
 module.exports = {
   resolve: {
@@ -23,6 +24,7 @@ module.exports = {
       containers: resolve(__dirname, "../../src/containers"),
       assets: resolve(__dirname, "../../src/assets"),
       pages: resolve(__dirname, "../../src/pages"),
+      utils: resolve(__dirname, "../../src/utils"),
     },
   },
   context: resolve(__dirname, "../../src"),
@@ -58,6 +60,7 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: "process/browser",
     }),
+    new Dotenv(),
   ],
   externals: {
     react: "React",
