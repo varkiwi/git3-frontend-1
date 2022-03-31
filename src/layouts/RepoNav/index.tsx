@@ -9,14 +9,12 @@ import { Donate } from "components/Donate";
 import { WalletContainer } from "containers/WalletContainer";
 
 export const RepoNav: React.FC = () => {
-  const history = useHistory();
-  const location = useLocation();
-
   const { walletActive, repoUrl, setRepoUrl } = WalletContainer.useContainer();
 
+  const history = useHistory();
+  const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
   const repoName = location.pathname.slice(1).split("/")[1];
-  setRepoUrl(`/${userAddress}/${repoName}`);
 
   const [tabValue, setTabValue] = React.useState("/repo");
   const handleTabClick = (value: string) => {
@@ -28,6 +26,8 @@ export const RepoNav: React.FC = () => {
     location.pathname.includes("issues")
       ? setTabValue("/issues")
       : setTabValue(`/repo`);
+
+    setRepoUrl(`/${userAddress}/${repoName}`);
   }, [location.pathname]);
 
   return location.pathname !== "/" ? (

@@ -12,5 +12,8 @@ export const CustomizedTable = styled(Table)(
     tbody .MuiTableRow-root {
       cursor: pointer;
     }
+    .MuiNativeSelect-icon {
+      right: -15px;
+    }
   `,
 );

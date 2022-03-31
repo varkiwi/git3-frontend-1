@@ -6,6 +6,11 @@ export const CustomizedTimeline = styled(Timeline)(
     align-items: flex-start;
     .MuiTimelineItem-root {
       width: 100%;
+      &:first-of-type {
+        .MuiPaper-root {
+          border: 1px solid ${theme.palette.text.primary};
+        }
+      }
     }
     .MuiTimelineItem-root:before {
       flex: 0;
@@ -15,8 +20,8 @@ export const CustomizedTimeline = styled(Timeline)(
       font-weight: 400;
       padding: 16px;
     }
-    .MuiTimelineDot-root {
-      background-color: ${theme.palette.secondary.main};
+    .MuiDivider-root {
+      margin:8px 0;
     }
   `,
 );

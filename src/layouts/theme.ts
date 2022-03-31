@@ -9,6 +9,9 @@ export const defaultTheme = createTheme({
     secondary: {
       main: "#14FFEC",
     },
+    error: {
+      main: "#8d14ff",
+    },
     text: {
       primary: "#ffffff",
       secondary: "#c7c7c7",

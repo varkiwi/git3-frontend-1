@@ -5,56 +5,73 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@mui/lab";
-import { Paper } from "@mui/material";
-import * as React from "react";
+import { Chip, Paper, Typography, Divider } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { CustomizedTimeline } from "./styled";
 
 interface TimelineProps {
-  text: string;
+  issueStorage: any;
+  answers: object[];
 }
 
 export const Timeline: React.FC<TimelineProps> = (props) => {
-  const { text } = props;
+  const { issueStorage, answers } = props;
+
+  const [timelineColor, setTimelineColor] = useState<
+    "primary" | "secondary" | "error"
+  >("primary");
+
+  useEffect(() => {
+    switch (issueStorage.state) {
+      case "Open":
+        setTimelineColor("secondary");
+        break;
+      case "Closed":
+        setTimelineColor("primary");
+        break;
+      default:
+        setTimelineColor("error");
+    }
+  }, [issueStorage.state]);
 
   return (
-    <CustomizedTimeline>
-      <TimelineItem>
-        <TimelineSeparator>
-          <TimelineDot />
-          <TimelineConnector />
-        </TimelineSeparator>
-        <TimelineContent>
-          <Paper>{text}</Paper>
-        </TimelineContent>
-      </TimelineItem>
-      <TimelineItem>
-        <TimelineSeparator>
-          <TimelineDot />
-          <TimelineConnector />
-        </TimelineSeparator>
-        <TimelineContent>
-          <Paper>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Totam id
-            quos eveniet facilis quia ipsam. Animi voluptas et nostrum
-            doloremque officia voluptatibus! Mollitia dolores delectus, numquam
-            libero perferendis optio voluptatem?
-          </Paper>
-        </TimelineContent>
-      </TimelineItem>
-      <TimelineItem>
-        <TimelineSeparator>
-          <TimelineDot />
-          <TimelineConnector />
-        </TimelineSeparator>
-        <TimelineContent>
-          <Paper>
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Totam id
-            quos eveniet facilis quia ipsam. Animi voluptas et nostrum
-            doloremque officia voluptatibus! Mollitia dolores delectus, numquam
-            libero perferendis optio voluptatem?
-          </Paper>
-        </TimelineContent>
-      </TimelineItem>
-    </CustomizedTimeline>
+    <>
+      <Chip label={issueStorage.state} color={timelineColor} />
+      <CustomizedTimeline>
+        <TimelineItem>
+          <TimelineSeparator>
+            <TimelineDot color={timelineColor} />
+            <TimelineConnector />
+          </TimelineSeparator>
+          <TimelineContent>
+            <Paper>
+              <Typography variant="body2" color="text.secondary">
+                {issueStorage.opener} commented
+              </Typography>
+              <Divider />
+              <Typography>{issueStorage.text}</Typography>
+            </Paper>
+          </TimelineContent>
+        </TimelineItem>
+        {answers.length > 0 &&
+          answers?.map((answer) => (
+            <TimelineItem key={answer.issueText}>
+              <TimelineSeparator>
+                <TimelineDot color={timelineColor} />
+                <TimelineConnector />
+              </TimelineSeparator>
+              <TimelineContent>
+                <Paper>
+                  <Typography variant="body2" color="text.secondary">
+                    {answer.author} commented
+                  </Typography>
+                  <Divider />
+                  <Typography>{answer.issueText}</Typography>
+                </Paper>
+              </TimelineContent>
+            </TimelineItem>
+          ))}
+      </CustomizedTimeline>
+    </>
   );
 };

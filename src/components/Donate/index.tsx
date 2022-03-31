@@ -1,7 +1,6 @@
-import { ButtonProps } from "@mui/material";
 import { Box, Modal, Typography } from "@mui/material";
-import React, { useCallback } from "react";
-import { CustomizedModalContent } from "./styled";
+import React, { useCallback, useState } from "react";
+import { CustomizedModalContent } from "../NoWalletModal/styled";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import { Button } from "components/Button";
 import { TextField } from "components/TextField";
@@ -9,38 +8,30 @@ import { WalletContainer } from "containers/WalletContainer";
 import { useLocation } from "react-router-dom";
 import { ethers } from "ethers";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
-
-interface ExtendedButtonProps extends ButtonProps {
-  label: string;
-}
+import { Controller, useForm } from "react-hook-form";
 
 export const Donate: React.FC = () => {
-  //   const { label, ...btnProps } = props;
-  const {
-    gitRepository,
-    repositoryDonations,
-    setRepositoryDonations,
-    walletAddress,
-    web3Provider,
-  } = WalletContainer.useContainer();
+  const { gitRepository, setRepositoryDonations, walletAddress, web3Provider } =
+    WalletContainer.useContainer();
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
-  const repoAddress = location.pathname.slice(1).split("/")[1];
-  const amount = 0.01;
+  const { control, handleSubmit } = useForm();
+  const [waitingForTx, setWaitingForTx] = useState<boolean>(false);
 
   const [openModal, setOpenModal] = React.useState(false);
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
   const collectTips = useCallback(async () => {
-    const gitRepo = gitRepository;
-    gitRepo
+    gitRepository
       .collectTips()
       .then((transaction: any) => {
+        setWaitingForTx(true);
         return transaction.wait();
       })
       .then(() => {
+        setWaitingForTx(false);
         return gitRepository.tips;
       })
       .then((tips: any) => {
@@ -48,23 +39,26 @@ export const Donate: React.FC = () => {
       });
   }, []);
 
-  const sendDonation = async () => {
+  const sendDonation = async (form: any) => {
     // const currency = switch1 ? 'USD' : 'Matic';
     const tx = {
       from: walletAddress,
-      to: repoAddress, // repo address
-      value: ethers.utils.parseEther(amount.toString()),
+      to: gitRepository.repositoryAddress, // repo address
+      value: ethers.utils.parseEther(form.bounty.toString()),
     };
     const signer = web3Provider.getSigner();
     signer
       .sendTransaction(tx)
       .then((transaction: any) => {
         handleCloseModal();
-        // waitingForTx = true;
+        setWaitingForTx(true);
         return transaction.wait();
       })
       .then(() => {
-        // waitingForTx = false;
+        setWaitingForTx(false);
+      })
+      .catch((err: Error) => {
+        console.log("Err", err);
       });
   };
 
@@ -87,6 +81,7 @@ export const Donate: React.FC = () => {
               size="small"
               color="primary"
               variant="outlined"
+              loading={waitingForTx}
               startIcon={<FavoriteBorderIcon />}
               onClick={handleOpenModal}
             />
@@ -100,33 +95,45 @@ export const Donate: React.FC = () => {
           <Typography sx={{ mt: 2 }}>
             How much would like to donate ?
           </Typography>
-          <TextField
-            label="Bounty"
-            fullWidth
-            sx={{ mt: 2 }}
-            inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-          />
-          <Box
-            marginTop={2}
-            display="flex"
-            justifyContent="flex-end"
-            gap="16px"
-          >
-            <Button
-              label="Close"
-              size="small"
-              color="primary"
-              variant="contained"
-              onClick={handleCloseModal}
+          <form onSubmit={handleSubmit(sendDonation)}>
+            <Controller
+              name="bounty"
+              control={control}
+              defaultValue={0}
+              render={({ field: { onChange, value } }) => (
+                <TextField
+                  label="Bounty"
+                  fullWidth
+                  sx={{ mt: 2 }}
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
             />
-            <Button
-              label="Ok"
-              size="small"
-              color="secondary"
-              variant="contained"
-              onClick={sendDonation}
-            />
-          </Box>
+
+            <Box
+              marginTop={2}
+              display="flex"
+              justifyContent="flex-end"
+              gap="16px"
+            >
+              <Button
+                label="Close"
+                size="small"
+                color="primary"
+                variant="contained"
+                onClick={handleCloseModal}
+              />
+              <Button
+                label="Ok"
+                size="small"
+                color="secondary"
+                variant="contained"
+                type="submit"
+                loading={waitingForTx}
+              />
+            </Box>
+          </form>
         </CustomizedModalContent>
       </Modal>
     </>

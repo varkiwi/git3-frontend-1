@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 import { GitContainer } from "containers/GitContainer";
 import { useForm, Controller } from "react-hook-form";
 import { useHistory } from "react-router-dom";
-import { CustomizedModalContent } from "components/Donate/styled";
+import { NoWalletModal } from "components/NoWalletModal";
 
 interface IssueForm {
   title: string;
@@ -24,9 +24,7 @@ export const NewIssue: React.FC = () => {
   const handleCloseModal = () => setOpenModal(false);
 
   const history = useHistory();
-
-  let dialog = false;
-  let loading = false;
+  const [loading, setLoading] = useState<boolean>(false);
 
   const submitIssue = (form: IssueForm) => {
     const issue = {
@@ -39,27 +37,31 @@ export const NewIssue: React.FC = () => {
       return;
     }
     let cid;
+    let issueHash;
     const gitRepo = gitRepository;
     gitRepo.web3Signer = web3Provider.getSigner();
     ipfsClient
       .add(Buffer.from(JSON.stringify(issue)))
       .then((answer) => {
-        cid = answer[0].hash;
+        cid = answer.path;
         const overrides = {
           value: ethers.utils.parseEther(form.bounty.toString()),
         };
         return gitRepository.openIssue(cid, overrides);
       })
       .then((tx) => {
-        loading = true;
+        setLoading(true);
         return tx.wait();
       })
       .then(() => {
-        loading = false;
+        setLoading(false);
         return gitRepository.web3Signer.getAddress();
       })
       .then((address) => gitRepository.getUserCidHash(address, cid))
-      .then((result) => gitRepository.issue(result[0]))
+      .then((result) => {
+        issueHash = result[0];
+        return gitRepository.issue(result[0]);
+      })
       .then((newIssue) => {
         let state;
         if (newIssue[0].state === 0) {
@@ -80,6 +82,7 @@ export const NewIssue: React.FC = () => {
           text: issue.issueText,
           answers: [],
           issueNumber: newIssue[0].issueNumber.toString(),
+          issueHash: issueHash,
         };
         localStorage.setItem("issue", JSON.stringify(issueData));
         history.push(`${repoUrl}/issues/${newIssue[0].issueNumber}`);
@@ -159,27 +162,14 @@ export const NewIssue: React.FC = () => {
           variant="contained"
           sx={{ float: "right" }}
           type="submit"
+          loading={loading}
           disabled={disableSubmitBtn}
         />
       </form>
-      <Modal open={openModal} onClose={handleCloseModal}>
-        <CustomizedModalContent>
-          <Typography variant="h2">No wallet found</Typography>
-          <Typography sx={{ mt: 2 }}>
-            Connect a wallet in order to submit an issue.
-          </Typography>
-
-          <Box marginTop={2} display="flex" justifyContent="flex-end">
-            <Button
-              label="Ok"
-              size="small"
-              color="secondary"
-              variant="contained"
-              onClick={handleCloseModal}
-            />
-          </Box>
-        </CustomizedModalContent>
-      </Modal>
+      <NoWalletModal
+        openModal={openModal}
+        handleCloseModal={handleCloseModal}
+      />
     </Container>
   );
 };

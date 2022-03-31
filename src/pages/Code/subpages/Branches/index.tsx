@@ -44,6 +44,7 @@ export const Branches: React.FC<BranchesProps> = (props) => {
     setReadFileMode(false);
     params?.set("path", "");
     initRepositoryActions(["files"]);
+    handleClose();
   };
 
   return (

@@ -1,6 +1,7 @@
-import { Button, styled } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
+import { styled } from "@mui/material";
 
-export const CustomizedButton = styled(Button)(
+export const CustomizedButton = styled(LoadingButton)(
   ({ theme }) => `
     font-size: 15px;
     font-weight:600;
@@ -19,6 +20,10 @@ export const CustomizedButton = styled(Button)(
     }
     &.MuiButton-sizeSmall {
       padding:4px 15px;
+    }
+    .MuiLoadingButton-loadingIndicator {
+      position: static;
+      margin: -2px 7px 0 0;
     }
   `,
 );

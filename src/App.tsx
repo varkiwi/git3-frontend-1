@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { Header } from "layouts/Header";
 import { ThemeProvider } from "@mui/material";
 import { defaultTheme } from "layouts/theme";
-import { AppContainer } from "layouts/AppContainer";
+import { AppContainer } from "layouts/AppContainer/styled";
 import { Dashboard } from "pages/Dashboard";
 import { Code } from "pages/Code";
 import { Issue } from "pages/Issue";
@@ -26,10 +26,7 @@ class App extends React.Component<Record<string, unknown>, undefined> {
                 <RepoNav />
                 <Switch>
                   <Route exact path="/" component={Dashboard} />
-                  <Route
-                    path="/:repoAddress/:repoName/repo"
-                    render={() => <Code />}
-                  />
+                  <Route path="/:repoAddress/:repoName/repo" component={Code} />
                   <Route
                     exact
                     path="/:repoAddress/:repoName/repo/:file"

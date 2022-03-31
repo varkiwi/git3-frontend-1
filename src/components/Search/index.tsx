@@ -23,7 +23,6 @@ export const Search: React.FC = () => {
   };
 
   const [options, setOptions] = useState<Array<SearchOptions>>([]);
-
   let optionText = "No results. Type 4 characters.";
 
   const searchRepository = (event: React.SyntheticEvent, userInput: string) => {
@@ -41,6 +40,9 @@ export const Search: React.FC = () => {
         const filteredRepoNames = repoNames.filter((entry: string) =>
           entry.toLowerCase().startsWith(userInput.toLowerCase()),
         );
+        if (filteredRepoNames.length === 0) {
+          return [];
+        }
         return Promise.all([
           gitFactory.getRepositoriesUserList(filteredRepoNames[0]),
           filteredRepoNames[0],
@@ -48,7 +50,7 @@ export const Search: React.FC = () => {
       })
       .then(([userList, filteredRepoName]: any) => {
         const resultArray: Array<SearchOptions> = [];
-        userList.map((userAddress: string) => {
+        userList?.map((userAddress: string) => {
           resultArray.push({
             label: `${userAddress.substring(0, 6)}..${userAddress.substring(
               37,

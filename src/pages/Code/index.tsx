@@ -1,26 +1,16 @@
-import {
-  Container,
-  Grid,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  OutlinedInput,
-  Typography,
-} from "@mui/material";
-import { Button } from "components/Button";
+import { Container, Grid } from "@mui/material";
 import { File } from "components/File";
 import React, { useCallback, useEffect, useState } from "react";
 import { Table } from "components/Table";
-import TerminalOutlinedIcon from "@mui/icons-material/TerminalOutlined";
-import { CustomizedPopover } from "./styled";
-import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
-import { CodeTableRow } from "interfaces/RowData";
+import { CodeTableRow } from "interfaces/Table/CodeTableRow";
 import { useLocation, useHistory } from "react-router-dom";
 import { WalletContainer } from "containers/WalletContainer";
 import loadSmartContract from "utils/utils";
 import { GitContainer } from "containers/GitContainer";
 import { Branches } from "./subpages/Branches";
 import { Download } from "./subpages/Download";
+import { TableHeaders } from "interfaces/Table/TableHeaders";
+import { FolderNav } from "./subpages/FolderNav";
 
 export const Code: React.FC = () => {
   const { setGitRepository, setRepositoryDonations, repoUrl } =
@@ -39,10 +29,17 @@ export const Code: React.FC = () => {
   const [repoName, setRepoName] = useState<string>("");
   const [fileContent, setFileContent] = useState<Array<Object>>([]);
   const [readFileMode, setReadFileMode] = useState<boolean>(false);
-  const [showFileContent, setShowFileContent] = useState<boolean>(false);
   const [remoteDatabase, setRemoteDatabase] = useState<any>(null);
   const [directoryPath, setDirectoryPath] = useState<any>([]);
   const [currentBranchName, setCurrentBranchName] = useState<string>("main");
+  const [loadingData, setLoadingData] = useState<boolean>(true);
+
+  const tableHeaders: TableHeaders[] = [
+    { header: "Name", value: "name", align: "left" },
+    { header: "Commit Message", value: "commit_message", align: "center" },
+    { header: "Commit Time", value: "commit_time", align: "right" },
+  ];
+  let isMounted: boolean;
 
   const updatedBranchNames = async (gitRepo: any) => {
     const branchNames = await gitRepo.getBranchNames();
@@ -61,6 +58,7 @@ export const Code: React.FC = () => {
         const lastElem = directoryPath[directoryPath.length - 1];
         setDirectoryPath(directoryPath);
         setRemoteDatabase(remoteDatabase);
+        setLoadingData(false);
         if (lastElem?.includes(".")) {
           setFileContent(JSON.parse(localStorage.getItem("fileContent")));
           setReadFileMode(true);
@@ -91,12 +89,12 @@ export const Code: React.FC = () => {
     return `${Math.round(diffDays / 365)} yeats ago`;
   }
 
-  const displayFiles = (remoteDatabase: any, directoryPath?: string[]) => {
+  const displayFiles = (remoteDatabase: any, directoryPath: string[]) => {
     /**
      * Function goes through the remote updatedBranchNames and displays the files
      * from the selected directory.
      */
-    let folder = remoteDatabase;
+    let folder = JSON.parse(JSON.stringify(remoteDatabase));
     // check where the user currently is
     for (const path of directoryPath) {
       folder = folder[path];
@@ -166,10 +164,17 @@ export const Code: React.FC = () => {
   }, [location]);
 
   useEffect(() => {
+    isMounted = true;
     initRepositoryActions();
   }, [loadGitRepository]);
 
-  useEffect(() => () => localStorage.clear(), []);
+  useEffect(
+    () => () => {
+      isMounted = false;
+      localStorage.clear();
+    },
+    [],
+  );
 
   const initRepositoryActions = (path?: string[]) => {
     const repoName = location.pathname.slice(1).split("/")[1];
@@ -194,7 +199,6 @@ export const Code: React.FC = () => {
         let fileContent = JSON.parse(
           new TextDecoder("utf-8").decode(obj.value),
         );
-        setShowFileContent(true);
         let lineNumber = 0;
         // replaces the last newline with a whitespace, in case there is one
         if (fileContent.content.endsWith("\n")) {
@@ -229,19 +233,26 @@ export const Code: React.FC = () => {
     }
   };
 
+  const emitFolderNavClick = (directoryPathArr: any) => {
+    setDirectoryPath(directoryPathArr);
+    const path = directoryPathArr.join(",");
+    setReadFileMode(false);
+    displayFiles(remoteDatabase, directoryPathArr);
+    history.push(`${repoUrl}/repo?path=${path}`);
+  };
+
   return (
     <Container>
-      <Grid
-        container
-        justifyContent="space-between"
-        marginTop={4}
-        marginBottom={2}
-      >
+      <Grid container marginTop={4} marginBottom={2}>
         <Branches
           branchesNames={branchesNames}
           initRepositoryActions={initRepositoryActions}
           currentBranchName={currentBranchName}
           setReadFileMode={setReadFileMode}
+        />
+        <FolderNav
+          directoryPath={directoryPath}
+          emitFolderNavClick={emitFolderNavClick}
         />
         <Download userAddress={userAddress} repoName={repoName} />
       </Grid>
@@ -252,7 +263,9 @@ export const Code: React.FC = () => {
         <Table
           handleRowClick={handleRowClick}
           data={files}
-          showFileContent={showFileContent}
+          tableHeaders={tableHeaders}
+          loadingData={loadingData}
+          isPagination={false}
         />
       )}
     </Container>

@@ -1,10 +1,73 @@
 import { Box, Container, Typography } from "@mui/material";
 import { Link } from "components/Link";
-import * as React from "react";
+import { GitContainer } from "containers/GitContainer";
+import React, { useCallback, useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 
 const git3Logo = require("../../assets/img/git3Logo.png");
 
+function getRandomArbitrary(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+interface RepoLinks {
+  name: string;
+  href: string;
+}
+
 export const Dashboard: React.FC = () => {
+  const { gitFactory } = GitContainer.useContainer();
+
+  const history = useHistory();
+  const [randomRepositories, setRandomRepositories] = useState<any[]>([]);
+
+  const loadGitRepository = useCallback(async () => {
+    let displayRepos: RepoLinks[] = [];
+    gitFactory
+      .getRepositoryNames()
+      .then((repoNames: RepoLinks[]) => {
+        // if there are already more than 3 repos available, pick 3 random
+        // it is not really random, since it could repeat itself, but it is currently not
+        // super important :)
+        if (repoNames.length > 3) {
+          displayRepos[0] = repoNames[getRandomArbitrary(0, repoNames.length)];
+          displayRepos[1] = repoNames[getRandomArbitrary(0, repoNames.length)];
+          displayRepos[2] = repoNames[getRandomArbitrary(0, repoNames.length)];
+        } else {
+          displayRepos = repoNames;
+        }
+        const resolve: any[] = [];
+        displayRepos.forEach((repo) =>
+          resolve.push(gitFactory.getRepositoriesUserList(repo)),
+        );
+        return Promise.all(resolve);
+      })
+      .then((data: any) => {
+        const whatsNext = [];
+        whatsNext.push({
+          name: displayRepos[0],
+          href: `${data[0][0]}/${displayRepos[0]}`,
+        });
+        whatsNext.push({
+          name: displayRepos[1],
+          href: `${data[1][0]}/${displayRepos[1]}`,
+        });
+        whatsNext.push({
+          name: displayRepos[2],
+          href: `${data[2][0]}/${displayRepos[2]}`,
+        });
+        setRandomRepositories(whatsNext);
+      });
+  }, []);
+
+  const handleReponameClick = (repo: RepoLinks) => {
+    history.push(`/${repo.href}/repo`);
+  };
+
+  useEffect(() => {
+    loadGitRepository();
+  }, [loadGitRepository]);
+
   return (
     <Container>
       <Box
@@ -22,6 +85,15 @@ export const Dashboard: React.FC = () => {
         <Typography variant="h2">
           Start by searching for some repositories, like:
         </Typography>
+        <Box display="flex" gap="10px">
+          {randomRepositories.map((repo, index) => (
+            <Link
+              key={`${repo.name} ${index}`}
+              label={repo.name}
+              onClick={() => handleReponameClick(repo)}
+            />
+          ))}
+        </Box>
         <Typography variant="h2">
           You want to learn more about the project:
         </Typography>

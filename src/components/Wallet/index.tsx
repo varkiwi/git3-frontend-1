@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "components/Button";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
@@ -6,7 +6,7 @@ import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalance
 import { ethers } from "ethers";
 import { WalletContainer } from "containers/WalletContainer";
 import { Box, Modal, Typography } from "@mui/material";
-import { CustomizedModalContent } from "components/Donate/styled";
+import { CustomizedModalContent } from "components/NoWalletModal/styled";
 
 export const Wallet: React.FC = () => {
   const {
