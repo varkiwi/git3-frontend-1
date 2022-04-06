@@ -1,4 +1,11 @@
-import { ButtonProps, Grid, Menu, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  ButtonProps,
+  Grid,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import { Button } from "components/Button";
 import * as React from "react";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
@@ -29,14 +36,14 @@ export const FolderNav: React.FC<BranchesProps> = (props) => {
       {directoryPath.map(
         (path, index) =>
           path !== "files" && (
-            <>
-              <ArrowForwardIosIcon color="primary" fontSize="14" />
+            <Box key={`${path}-${index}`} display="flex" alignItems="center">
+              <ArrowForwardIosIcon color="primary" sx={{ width: 14 }} />
               <Button
                 key={`${path}-${index}`}
                 label={path}
                 onClick={() => handleFolderNavClick(index)}
               />
-            </>
+            </Box>
           ),
       )}
     </Grid>

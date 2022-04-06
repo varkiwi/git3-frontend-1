@@ -11,6 +11,7 @@ import { Branches } from "./subpages/Branches";
 import { Download } from "./subpages/Download";
 import { TableHeaders } from "interfaces/Table/TableHeaders";
 import { FolderNav } from "./subpages/FolderNav";
+import { FileContent } from "interfaces/FileContent";
 
 export const Code: React.FC = () => {
   const { setGitRepository, setRepositoryDonations, repoUrl } =
@@ -27,7 +28,7 @@ export const Code: React.FC = () => {
   const [files, setFiles] = useState<Array<Object>>([]);
   const [userAddress, setUserAddress] = useState<string>("");
   const [repoName, setRepoName] = useState<string>("");
-  const [fileContent, setFileContent] = useState<Array<Object>>([]);
+  const [fileContent, setFileContent] = useState<Array<FileContent>>([]);
   const [readFileMode, setReadFileMode] = useState<boolean>(false);
   const [remoteDatabase, setRemoteDatabase] = useState<any>(null);
   const [directoryPath, setDirectoryPath] = useState<any>([]);
@@ -60,7 +61,10 @@ export const Code: React.FC = () => {
         setRemoteDatabase(remoteDatabase);
         setLoadingData(false);
         if (lastElem?.includes(".")) {
-          setFileContent(JSON.parse(localStorage.getItem("fileContent")));
+          const fileContentStorage = localStorage.getItem("fileContent");
+          if (fileContentStorage) {
+            setFileContent(JSON.parse(fileContentStorage));
+          }
           setReadFileMode(true);
         } else {
           displayFiles(remoteDatabase, directoryPath);

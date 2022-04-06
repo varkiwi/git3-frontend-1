@@ -10,11 +10,11 @@ interface GitState {
 
 export const GitContainer = createContainer<GitState>(() => {
   const provider = new ethers.providers.JsonRpcProvider(
-    "https://matic-mumbai.chainstacklabs.com",
+    process.env.RPC_ENDPOINT,
   );
 
   const gitFactoryAbi = gitFactoryJson.abi;
-  const gitFactoryAddress = "0x38FF86F13806F4Fb5A15Ba3558Ff257875D2acd8";
+  const gitFactoryAddress = process.env.GITFACTORY_ADDRESS ?? "";
   const gitFactory = new ethers.Contract(
     gitFactoryAddress,
     gitFactoryAbi,

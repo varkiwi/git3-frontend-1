@@ -48,7 +48,6 @@ export const Wallet: React.FC = () => {
       console.log("Could not get a wallet connection", e);
       return;
     }
-
     if (checkChainID(provider.networkVersion)) {
       const web3Provider = new ethers.providers.Web3Provider(provider);
       const gitRepo = gitRepository;

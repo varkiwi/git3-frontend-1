@@ -1,4 +1,4 @@
-import { Box, Chip, Container, Grid, Paper, Typography } from "@mui/material";
+import { Box, Container, Grid, Paper, Typography } from "@mui/material";
 import { Button } from "components/Button";
 import { TextField } from "components/TextField";
 import { Timeline } from "components/Timeline";
@@ -9,6 +9,28 @@ import { Controller, useForm } from "react-hook-form";
 import { ethers } from "ethers";
 import { useLocation } from "react-router-dom";
 import { NoWalletModal } from "components/NoWalletModal";
+import { IpfsBufferResult } from "interfaces/Ipfs";
+import { Transaction } from "interfaces/Transaction";
+
+interface Issue {
+  opener: string;
+  answers: Array<Array<string>>;
+  bounty: string;
+  state: string;
+  issueHash: string;
+  issueNumber: number;
+  title: string;
+}
+
+interface IssueForm {
+  comment: string;
+  bounty: number;
+}
+
+interface IpfsData {
+  done: boolean;
+  value: Uint8Array;
+}
 
 export const PreviewIssue: React.FC = () => {
   const { gitRepository, web3Provider, repoUrl, walletAddress } =
@@ -23,7 +45,7 @@ export const PreviewIssue: React.FC = () => {
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
-  const issueStorage = JSON.parse(localStorage.getItem("issue"));
+  const issueStorage: Issue = JSON.parse(localStorage.getItem("issue") || "{}");
   const isCloseIssue =
     issueStorage.opener &&
     walletAddress &&
@@ -34,7 +56,7 @@ export const PreviewIssue: React.FC = () => {
       ipfsClient
         .cat(answer[0])
         .next()
-        .then((rawData) =>
+        .then((rawData: IpfsData) =>
           JSON.parse(new TextDecoder("utf-8").decode(rawData.value)),
         ),
     );
@@ -51,7 +73,7 @@ export const PreviewIssue: React.FC = () => {
 
   let loading = false;
 
-  const postComment = async (form: Object) => {
+  const postComment = async (form: IssueForm) => {
     if (form.comment.length > 0) {
       const gitRepo = gitRepository;
       if (web3Provider === "") {
@@ -64,10 +86,10 @@ export const PreviewIssue: React.FC = () => {
         timestamp: Date.now(),
         author: userAddress,
       };
-      let cid;
+      let cid: string;
       ipfsClient
         .add(Buffer.from(JSON.stringify(issue)))
-        .then((answer) => {
+        .then((answer: IpfsBufferResult) => {
           cid = answer.path;
           const overrides = {
             value: ethers.utils.parseEther(form.bounty.toString()),
@@ -78,11 +100,11 @@ export const PreviewIssue: React.FC = () => {
             overrides,
           );
         })
-        .then((tx) => {
+        .then((tx: Transaction) => {
           loading = true;
           return tx.wait();
         })
-        .then((result) => {
+        .then((result: any) => {
           loading = false;
           setAnswers([...answers, issue]);
           issueStorage.answers.push([cid, result.from]);
@@ -91,7 +113,7 @@ export const PreviewIssue: React.FC = () => {
     }
   };
 
-  const postAndCloseComment = async (form: Object) => {
+  const postAndCloseComment = async (form: IssueForm) => {
     await postComment(form);
     loading = true;
     const gitRepo = gitRepository;
@@ -100,7 +122,7 @@ export const PreviewIssue: React.FC = () => {
       // before we can close it! This might change in the future or maybe should :D
       gitRepo
         .updateIssueState(issueStorage.issueHash, 2)
-        .then((tx) => tx.wait())
+        .then((tx: Transaction) => tx.wait())
         .then(() => {
           issueStorage.state = "Resolved";
           localStorage.setItem("issue", JSON.stringify(issueStorage));
@@ -110,7 +132,7 @@ export const PreviewIssue: React.FC = () => {
       // there is no bounty, so we can close the issue :)
       gitRepo
         .updateIssueState(issueStorage.issueHash, 1)
-        .then((tx) => tx.wait())
+        .then((tx: Transaction) => tx.wait())
         .then(() => {
           issueStorage.state = "Closed";
           localStorage.setItem("issue", JSON.stringify(issueStorage));
@@ -119,8 +141,8 @@ export const PreviewIssue: React.FC = () => {
     }
   };
 
-  const { control, handleSubmit, watch } = useForm();
-  const disableSubmitBtn = watch("comment") === "" || watch("bounty") === "";
+  const { control, handleSubmit, watch } = useForm<IssueForm>();
+  const disableSubmitBtn = watch("comment") === "";
 
   return (
     <Container>

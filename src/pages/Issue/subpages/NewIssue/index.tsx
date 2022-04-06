@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Modal, Paper, Typography } from "@mui/material";
+import { Container, Grid, Paper } from "@mui/material";
 import { Button } from "components/Button";
 import { TextField } from "components/TextField";
 import { WalletContainer } from "containers/WalletContainer";
@@ -8,11 +8,13 @@ import { GitContainer } from "containers/GitContainer";
 import { useForm, Controller } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 import { NoWalletModal } from "components/NoWalletModal";
+import { Transaction } from "interfaces/Transaction";
+import { IpfsBufferResult } from "interfaces/Ipfs";
 
 interface IssueForm {
   title: string;
   comment: string;
-  bounty: string;
+  bounty: number;
 }
 
 export const NewIssue: React.FC = () => {
@@ -25,6 +27,7 @@ export const NewIssue: React.FC = () => {
 
   const history = useHistory();
   const [loading, setLoading] = useState<boolean>(false);
+  const { control, handleSubmit, watch } = useForm<IssueForm>();
 
   const submitIssue = (form: IssueForm) => {
     const issue = {
@@ -36,20 +39,20 @@ export const NewIssue: React.FC = () => {
       setOpenModal(true);
       return;
     }
-    let cid;
-    let issueHash;
+    let cid: string;
+    let issueHash: string;
     const gitRepo = gitRepository;
     gitRepo.web3Signer = web3Provider.getSigner();
     ipfsClient
       .add(Buffer.from(JSON.stringify(issue)))
-      .then((answer) => {
+      .then((answer: IpfsBufferResult) => {
         cid = answer.path;
         const overrides = {
           value: ethers.utils.parseEther(form.bounty.toString()),
         };
         return gitRepository.openIssue(cid, overrides);
       })
-      .then((tx) => {
+      .then((tx: Transaction) => {
         setLoading(true);
         return tx.wait();
       })
@@ -57,12 +60,12 @@ export const NewIssue: React.FC = () => {
         setLoading(false);
         return gitRepository.web3Signer.getAddress();
       })
-      .then((address) => gitRepository.getUserCidHash(address, cid))
-      .then((result) => {
+      .then((address: string) => gitRepository.getUserCidHash(address, cid))
+      .then((result: Array<string>) => {
         issueHash = result[0];
         return gitRepository.issue(result[0]);
       })
-      .then((newIssue) => {
+      .then((newIssue: Array<any>) => {
         let state;
         if (newIssue[0].state === 0) {
           state = "Open";
@@ -77,7 +80,6 @@ export const NewIssue: React.FC = () => {
           state,
           bounty: ethers.utils.formatEther(newIssue[0].bounty),
           opener: newIssue[0].opener,
-          // number: newIssue[0].issueNumber,
           title: issue.issueTitle,
           text: issue.issueText,
           answers: [],
@@ -89,9 +91,11 @@ export const NewIssue: React.FC = () => {
       });
   };
 
-  const { control, handleSubmit, watch } = useForm();
-
-  const disableSubmitBtn = watch("title") === "" || watch("comment") === "";
+  const disableSubmitBtn =
+    watch("title") === "" ||
+    watch("title") === undefined ||
+    watch("comment") === "" ||
+    watch("comment") === undefined;
 
   return (
     <Container>
