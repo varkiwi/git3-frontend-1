@@ -25,6 +25,7 @@ module.exports = {
       assets: resolve(__dirname, "../../src/assets"),
       pages: resolve(__dirname, "../../src/pages"),
       utils: resolve(__dirname, "../../src/utils"),
+      enums: resolve(__dirname, "../../src/enums"),
     },
   },
   context: resolve(__dirname, "../../src"),
