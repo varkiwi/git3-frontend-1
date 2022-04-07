@@ -20,8 +20,7 @@ export const Wallet: React.FC = () => {
   } = WalletContainer.useContainer();
 
   const checkChainID = (chainId: string) => {
-      let supportedChainIds = JSON.parse(process.env.SUPPORTED_CHAINIDS === undefined ? "[]" : process.env.SUPPORTED_CHAINIDS);
-      return supportedChainIds.includes(parseInt(chainId));
+    return chainId === process.env.CHAINID;
   };
 
   const providerOptions = {
@@ -133,7 +132,7 @@ export const Wallet: React.FC = () => {
         <CustomizedModalContent>
           <Typography variant="h2">Switch network</Typography>
           <Typography sx={{ mt: 2 }}>
-            Please switch your network to Polygon Mumbai and Nervos Godwoken Testnet.
+            Please switch your network to Polygon Mumbai.
             <br /> We currently only support this network.
           </Typography>
 
