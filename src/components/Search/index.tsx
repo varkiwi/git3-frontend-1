@@ -19,7 +19,8 @@ export const Search: React.FC = () => {
     history.push(`/${value.address}/${value.repoName}/repo`);
     setOptions([]);
     setAutocompleteKey(Math.random);
-    localStorage.clear();
+    localStorage.removeItem("currentBranchName");
+    localStorage.removeItem("fileContent");
   };
 
   const [options, setOptions] = useState<Array<SearchOptions>>([]);
