@@ -16,9 +16,6 @@ export const GitContainer = createContainer<GitState>(() => {
     localStorage.getItem("chainType") || EChainType.MUMBAI,
   );
 
-  console.log('ChainType', chainType);
-  console.log('setChainType', setChainType);
-
   let gitFactoryAddress;
   let rpcEndpoint;
   switch (chainType) {
@@ -30,8 +27,7 @@ export const GitContainer = createContainer<GitState>(() => {
       gitFactoryAddress = process.env.GITFACTORY_ADDRESS_MUMBAI ?? "";
       rpcEndpoint = process.env.RPC_ENDPOINT_MUMBAI;
   }
-  console.log(gitFactoryAddress);
-  console.log(rpcEndpoint);
+
   const provider = new ethers.providers.JsonRpcProvider(rpcEndpoint);
   const gitFactoryAbi = gitFactoryJson.abi;
   const gitFactory = new ethers.Contract(
