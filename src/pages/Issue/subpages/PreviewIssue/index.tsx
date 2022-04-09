@@ -22,6 +22,13 @@ interface Issue {
   title: string;
 }
 
+interface Answer {
+  author: string;
+  issueText: string;
+  issueTitle: string;
+  timestamp: number;
+}
+
 interface IssueForm {
   comment: string;
   bounty: number;
@@ -40,8 +47,9 @@ export const PreviewIssue: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const handleCloseModal = () => setOpenModal(false);
 
-  const [answers, setAnswers] = useState<any>([]);
+  const [answers, setAnswers] = useState<Array<Answer>>([]);
   const [action, setAction] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
@@ -61,6 +69,7 @@ export const PreviewIssue: React.FC = () => {
         ),
     );
     Promise.all(answers).then((data) => {
+      console.log(data);
       setAnswers(data);
     });
 
@@ -70,8 +79,6 @@ export const PreviewIssue: React.FC = () => {
       setAction("close");
     }
   }, []);
-
-  let loading = false;
 
   const postComment = async (form: IssueForm) => {
     if (form.comment.length > 0) {
@@ -101,11 +108,11 @@ export const PreviewIssue: React.FC = () => {
           );
         })
         .then((tx: Transaction) => {
-          loading = true;
+          setLoading(true);
           return tx.wait();
         })
         .then((result: any) => {
-          loading = false;
+          setLoading(false);
           setAnswers([...answers, issue]);
           issueStorage.answers.push([cid, result.from]);
           localStorage.setItem("issue", JSON.stringify(issueStorage));
@@ -115,7 +122,7 @@ export const PreviewIssue: React.FC = () => {
 
   const postAndCloseComment = async (form: IssueForm) => {
     await postComment(form);
-    loading = true;
+    setLoading(true);
     const gitRepo = gitRepository;
     if (+issueStorage.bounty > 0) {
       // when there is a bounty, we have to resolve it first,
@@ -126,7 +133,7 @@ export const PreviewIssue: React.FC = () => {
         .then(() => {
           issueStorage.state = "Resolved";
           localStorage.setItem("issue", JSON.stringify(issueStorage));
-          loading = false;
+          setLoading(false);
         });
     } else {
       // there is no bounty, so we can close the issue :)
@@ -136,13 +143,18 @@ export const PreviewIssue: React.FC = () => {
         .then(() => {
           issueStorage.state = "Closed";
           localStorage.setItem("issue", JSON.stringify(issueStorage));
-          loading = false;
+          setLoading(false);
         });
     }
   };
 
   const { control, handleSubmit, watch } = useForm<IssueForm>();
   const disableSubmitBtn = watch("comment") === "";
+  const submitForm = (isCommit: boolean) => {
+    isCommit
+      ? handleSubmit(postComment)()
+      : handleSubmit(postAndCloseComment)();
+  };
 
   return (
     <Container>
@@ -153,11 +165,7 @@ export const PreviewIssue: React.FC = () => {
         </Typography>
       </Box>
       <Timeline issueStorage={issueStorage} answers={answers} />
-      <form
-        onSubmit={handleSubmit(
-          isCloseIssue ? postAndCloseComment : postComment,
-        )}
-      >
+      <form>
         <Grid
           container
           flexDirection="column"
@@ -205,8 +213,9 @@ export const PreviewIssue: React.FC = () => {
             size="small"
             color="secondary"
             variant="contained"
-            type="submit"
             disabled={disableSubmitBtn}
+            loading={loading}
+            onClick={() => submitForm(false)}
             sx={{ float: "right" }}
           />
         )}
@@ -215,8 +224,9 @@ export const PreviewIssue: React.FC = () => {
           size="small"
           color="secondary"
           variant="contained"
-          type="submit"
           disabled={disableSubmitBtn}
+          loading={loading}
+          onClick={() => submitForm(true)}
           sx={{ float: "right", marginRight: 4 }}
         />
       </form>

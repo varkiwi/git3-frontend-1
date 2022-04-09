@@ -7,6 +7,9 @@ import { ethers } from "ethers";
 import { WalletContainer } from "containers/WalletContainer";
 import { Box, Modal, Typography } from "@mui/material";
 import { CustomizedModalContent } from "components/NoWalletModal/styled";
+import { GitContainer } from "containers/GitContainer";
+import { EChainType } from "enums/ChainType";
+import { useHistory } from "react-router-dom";
 
 export const Wallet: React.FC = () => {
   const {
@@ -18,9 +21,16 @@ export const Wallet: React.FC = () => {
     gitRepository,
     setRepositoryDonations,
   } = WalletContainer.useContainer();
+  const { setChainType } = GitContainer.useContainer();
+
+  const history = useHistory();
 
   const checkChainID = (chainId: string) => {
-    return chainId === process.env.CHAINID;
+    let supportedChains: Array<string>;
+    if (process.env.SUPPORTED_CHAINIDS) {
+      supportedChains = process.env.SUPPORTED_CHAINIDS.split(",");
+      return supportedChains.includes(chainId);
+    }
   };
 
   const providerOptions = {
@@ -39,6 +49,16 @@ export const Wallet: React.FC = () => {
     theme: "dark",
   });
 
+  const changeChainType = (provider: any) => {
+    if (provider.chainId === process.env.CHAINID_GODWOKEN) {
+      localStorage.setItem("chainType", EChainType.GODWOKEN);
+      setChainType(EChainType.GODWOKEN);
+    } else {
+      localStorage.removeItem("chainType");
+      setChainType(EChainType.MUMBAI);
+    }
+  };
+
   const showModal = async () => {
     let provider: any;
     try {
@@ -48,7 +68,8 @@ export const Wallet: React.FC = () => {
       console.log("Could not get a wallet connection", e);
       return;
     }
-    if (checkChainID(provider.networkVersion)) {
+
+    if (checkChainID(provider.chainId)) {
       const web3Provider = new ethers.providers.Web3Provider(provider);
       const gitRepo = gitRepository;
       if (gitRepo !== null) {
@@ -56,6 +77,7 @@ export const Wallet: React.FC = () => {
         // we are not able to send state chaning tx
         gitRepo.web3Signer = web3Provider.getSigner();
       }
+      changeChainType(provider);
       setWalletActive(true);
       setWalletAddress(provider.selectedAddress);
       setWeb3Provider(web3Provider);
@@ -85,6 +107,8 @@ export const Wallet: React.FC = () => {
       if (!checkChainID(chainId.toString())) {
         setWalletActive(false);
       }
+      changeChainType(provider);
+      history.push("/");
     });
 
     // Subscribe to provider connection
@@ -131,8 +155,9 @@ export const Wallet: React.FC = () => {
         <CustomizedModalContent>
           <Typography variant="h2">Switch network</Typography>
           <Typography sx={{ mt: 2 }}>
-            Please switch your network to Polygon Mumbai.
-            <br /> We currently only support this network.
+            Please switch your network to Polygon Mumbai and Nervos Godwoken
+            Testnet.
+            <br /> We currently only support this networks.
           </Typography>
 
           <Box marginTop={2} display="flex" justifyContent="flex-end">

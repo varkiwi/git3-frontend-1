@@ -21,7 +21,7 @@ export const Dashboard: React.FC = () => {
   const history = useHistory();
   const [randomRepositories, setRandomRepositories] = useState<any[]>([]);
 
-  const loadGitRepository = useCallback(async () => {
+  const loadGitRepository = () => {
     let displayRepos: RepoLinks[] = [];
     gitFactory
       .getRepositoryNames()
@@ -43,22 +43,16 @@ export const Dashboard: React.FC = () => {
         return Promise.all(resolve);
       })
       .then((data: any) => {
-        const whatsNext = [];
-        whatsNext.push({
-          name: displayRepos[0],
-          href: `${data[0][0]}/${displayRepos[0]}`,
-        });
-        whatsNext.push({
-          name: displayRepos[1],
-          href: `${data[1][0]}/${displayRepos[1]}`,
-        });
-        whatsNext.push({
-          name: displayRepos[2],
-          href: `${data[2][0]}/${displayRepos[2]}`,
+        const whatsNext: Array<RepoLinks> = [];
+        data.map((item: Array<string>, index: number) => {
+          whatsNext.push({
+            name: displayRepos[index],
+            href: `${item[0]}/${displayRepos[index]}`,
+          });
         });
         setRandomRepositories(whatsNext);
       });
-  }, []);
+  };
 
   const handleReponameClick = (repo: RepoLinks) => {
     history.push(`/${repo.href}/repo`);
@@ -66,7 +60,7 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadGitRepository();
-  }, [loadGitRepository]);
+  }, [gitFactory]);
 
   return (
     <Container>

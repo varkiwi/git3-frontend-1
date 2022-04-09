@@ -175,7 +175,8 @@ export const Code: React.FC = () => {
   useEffect(
     () => () => {
       isMounted = false;
-      localStorage.clear();
+      localStorage.removeItem("currentBranchName");
+      localStorage.removeItem("fileContent");
     },
     [],
   );
