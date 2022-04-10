@@ -18,8 +18,9 @@ export const RepoNav: React.FC = () => {
 
   const [tabValue, setTabValue] = React.useState("/repo");
   const handleTabClick = (value: string) => {
+    const params = new URLSearchParams(location.search);
     setTabValue(value);
-    history.push(`${repoUrl}${value}`);
+    history.push({ pathname: `${repoUrl}${value}`, search: params.toString() });
   };
 
   useEffect(() => {

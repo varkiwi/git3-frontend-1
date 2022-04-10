@@ -9,6 +9,11 @@ import { useLocation } from "react-router-dom";
 import { ethers } from "ethers";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import { Controller, useForm } from "react-hook-form";
+import { Transaction } from "interfaces/Transaction";
+
+interface SendDonateForm {
+  bounty: number;
+}
 
 export const Donate: React.FC = () => {
   const { gitRepository, setRepositoryDonations, walletAddress, web3Provider } =
@@ -16,7 +21,7 @@ export const Donate: React.FC = () => {
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
-  const { control, handleSubmit } = useForm();
+  const { control, handleSubmit } = useForm<SendDonateForm>();
   const [waitingForTx, setWaitingForTx] = useState<boolean>(false);
 
   const [openModal, setOpenModal] = React.useState(false);
@@ -26,7 +31,7 @@ export const Donate: React.FC = () => {
   const collectTips = useCallback(async () => {
     gitRepository
       .collectTips()
-      .then((transaction: any) => {
+      .then((transaction: Transaction) => {
         setWaitingForTx(true);
         return transaction.wait();
       })
@@ -34,22 +39,22 @@ export const Donate: React.FC = () => {
         setWaitingForTx(false);
         return gitRepository.tips;
       })
-      .then((tips: any) => {
+      .then((tips: string) => {
         setRepositoryDonations(tips);
       });
   }, []);
 
-  const sendDonation = async (form: any) => {
+  const sendDonation = async (form: SendDonateForm) => {
     // const currency = switch1 ? 'USD' : 'Matic';
     const tx = {
       from: walletAddress,
-      to: gitRepository.repositoryAddress, // repo address
+      to: gitRepository.repositoryAddress,
       value: ethers.utils.parseEther(form.bounty.toString()),
     };
     const signer = web3Provider.getSigner();
     signer
       .sendTransaction(tx)
-      .then((transaction: any) => {
+      .then((transaction: Transaction) => {
         handleCloseModal();
         setWaitingForTx(true);
         return transaction.wait();
@@ -70,23 +75,20 @@ export const Donate: React.FC = () => {
           size="small"
           color="primary"
           variant="outlined"
-          startIcon={<ThumbUpOffAltIcon />}
+          loading={waitingForTx}
+          startIcon={waitingForTx ? null : <ThumbUpOffAltIcon />}
           onClick={collectTips}
         />
       ) : (
-        <>
-          <Box display="flex" alignItems="center">
-            <Button
-              label="Donate"
-              size="small"
-              color="primary"
-              variant="outlined"
-              loading={waitingForTx}
-              startIcon={<FavoriteBorderIcon />}
-              onClick={handleOpenModal}
-            />
-          </Box>
-        </>
+        <Button
+          label="Donate"
+          size="small"
+          color="primary"
+          variant="outlined"
+          loading={waitingForTx}
+          startIcon={waitingForTx ? null : <FavoriteBorderIcon />}
+          onClick={handleOpenModal}
+        />
       )}
 
       <Modal open={openModal} onClose={handleCloseModal}>

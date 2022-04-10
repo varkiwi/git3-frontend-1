@@ -67,7 +67,6 @@ export const Table: React.FC<TableProps> = (props) => {
           ).map((row: any, index: number) => (
             <TableRow
               key={`${row[tableHeaders[0].value]} ${index}`}
-              sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               onClick={() => handleRowClick(row)}
             >
               <TableCell component="th" scope="row">

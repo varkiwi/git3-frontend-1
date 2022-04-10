@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { createContainer } from "unstated-next";
 import loadSmartContract from "utils/utils";
 import { GitContainer } from "./GitContainer";
@@ -28,8 +28,6 @@ export const WalletContainer = createContainer<WalletState>(() => {
   const [repoUrl, setRepoUrl] = useState<string>("");
 
   const location = useLocation();
-  const history = useHistory();
-
   const { gitFactory } = GitContainer.useContainer();
 
   const loadContract = useCallback(async () => {
