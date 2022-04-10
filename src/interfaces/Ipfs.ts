@@ -3,3 +3,8 @@ export interface IpfsBufferResult {
   path: string;
   size: number;
 }
+
+export interface IpfsData {
+  done: boolean;
+  value: Uint8Array;
+}

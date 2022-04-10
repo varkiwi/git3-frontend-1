@@ -12,10 +12,17 @@ import { Download } from "./subpages/Download";
 import { TableHeaders } from "interfaces/Table/TableHeaders";
 import { FolderNav } from "./subpages/FolderNav";
 import { FileContent } from "interfaces/FileContent";
+import calculateCommitTime from "utils/calculateCommitTime";
+import GitRepository from "utils/GitRepository";
+import { IpfsData } from "interfaces/Ipfs";
+
+interface RepoFiles {
+  files: object;
+  head_cid: string;
+}
 
 export const Code: React.FC = () => {
-  const { setGitRepository, setRepositoryDonations, repoUrl } =
-    WalletContainer.useContainer();
+  const { setGitRepository, repoUrl } = WalletContainer.useContainer();
   const { gitFactory, ipfsClient } = GitContainer.useContainer();
 
   const location = useLocation();
@@ -30,7 +37,7 @@ export const Code: React.FC = () => {
   const [repoName, setRepoName] = useState<string>("");
   const [fileContent, setFileContent] = useState<Array<FileContent>>([]);
   const [readFileMode, setReadFileMode] = useState<boolean>(false);
-  const [remoteDatabase, setRemoteDatabase] = useState<any>(null);
+  const [remoteDatabase, setRemoteDatabase] = useState<RepoFiles | null>(null);
   const [directoryPath, setDirectoryPath] = useState<any>([]);
   const [currentBranchName, setCurrentBranchName] = useState<string>("main");
   const [loadingData, setLoadingData] = useState<boolean>(true);
@@ -42,58 +49,24 @@ export const Code: React.FC = () => {
   ];
   let isMounted: boolean;
 
-  const updatedBranchNames = async (gitRepo: any) => {
+  const updatedBranchNames = async (gitRepo: GitRepository) => {
     const branchNames = await gitRepo.getBranchNames();
     setBranchesNames(branchNames[0]);
   };
 
-  const resolveCID = async (cid: string, pathParams: any) => {
+  const resolveCID = async (cid: string) => {
     const data = await ipfsClient.cat(cid);
-    data
+    return data
       .next()
-      .then((obj: any) => {
-        return JSON.parse(new TextDecoder("utf-8").decode(obj.value));
-      })
-      .then((remoteDatabase: any) => {
-        const directoryPath = pathParams ? pathParams : ["files"];
-        const lastElem = directoryPath[directoryPath.length - 1];
-        setDirectoryPath(directoryPath);
-        setRemoteDatabase(remoteDatabase);
-        setLoadingData(false);
-        if (lastElem?.includes(".")) {
-          const fileContentStorage = localStorage.getItem("fileContent");
-          if (fileContentStorage) {
-            setFileContent(JSON.parse(fileContentStorage));
-          }
-          setReadFileMode(true);
-        } else {
-          displayFiles(remoteDatabase, directoryPath);
-        }
-      });
+      .then((obj: IpfsData) =>
+        JSON.parse(new TextDecoder("utf-8").decode(obj.value)),
+      );
   };
 
-  function calculateCommitTime(commitTimestamp: number) {
-    const currentTimestamp = Math.round(new Date().getTime() / 1000);
-    const diffSec = Math.round(currentTimestamp - commitTimestamp);
-    if (diffSec < 60) {
-      return `${diffSec} seconds ago`;
-    }
-    const diffMin = Math.round(diffSec / 60);
-    if (diffMin < 60) {
-      return `${diffMin} minutes ago`;
-    }
-    const diffHours = Math.round(diffMin / 60);
-    if (diffHours < 24) {
-      return `${diffHours} hours ago`;
-    }
-    const diffDays = Math.round(diffHours / 24);
-    if (diffDays < 365) {
-      return `${diffDays} days ago`;
-    }
-    return `${Math.round(diffDays / 365)} yeats ago`;
-  }
-
-  const displayFiles = (remoteDatabase: any, directoryPath: string[]) => {
+  const displayFiles = (
+    remoteDatabase: RepoFiles | null,
+    directoryPath: string[],
+  ) => {
     /**
      * Function goes through the remote updatedBranchNames and displays the files
      * from the selected directory.
@@ -129,7 +102,23 @@ export const Code: React.FC = () => {
           throw new Error("Branch is not active");
         }
         const cid = branch[0][1];
-        return resolveCID(cid, pathParams);
+        return resolveCID(cid);
+      })
+      .then((remoteDatabase: RepoFiles) => {
+        const directoryPath = pathParams ? pathParams : ["files"];
+        const lastElem = directoryPath[directoryPath.length - 1];
+        setDirectoryPath(directoryPath);
+        setRemoteDatabase(remoteDatabase);
+        setLoadingData(false);
+        if (lastElem?.includes(".")) {
+          const fileContentStorage = localStorage.getItem("fileContent");
+          if (fileContentStorage) {
+            setFileContent(JSON.parse(fileContentStorage));
+          }
+          setReadFileMode(true);
+        } else {
+          displayFiles(remoteDatabase, directoryPath);
+        }
       })
       .catch((err: Error) => {
         console.log("Err", err);
@@ -143,29 +132,18 @@ export const Code: React.FC = () => {
         userAddress,
         repoName,
       );
-      setGitRepository(gitRepo);
-      // if (web3Provider !== null) {
-      //   gitRepo.web3Signer = web3Provider.getSigner();
-      // }
-      gitRepo.tips.then((tips: any) => {
-        setRepositoryDonations(tips);
-      });
-      updatedBranchNames(gitRepo).then(() => {
-        const currentBranchName =
-          localStorage.getItem("currentBranchName") || "main";
-        setCurrentBranchName(currentBranchName);
-        loadRemoteFiles(currentBranchName, gitRepo, pathParams);
-      });
+      if (isMounted) {
+        setGitRepository(gitRepo);
+        updatedBranchNames(gitRepo).then(() => {
+          const currentBranchName =
+            localStorage.getItem("currentBranchName") || "main";
+          setCurrentBranchName(currentBranchName);
+          loadRemoteFiles(currentBranchName, gitRepo, pathParams);
+        });
+      }
     },
     [],
   );
-
-  useEffect(() => {
-    if (!params?.get("path")) {
-      setReadFileMode(false);
-      initRepositoryActions();
-    }
-  }, [location]);
 
   useEffect(() => {
     isMounted = true;
@@ -199,27 +177,22 @@ export const Code: React.FC = () => {
      * change directory.
      */
     if (value.type === "file") {
-      const data = await ipfsClient.cat(value.cid);
-      await data.next().then((obj: any) => {
-        let fileContent = JSON.parse(
-          new TextDecoder("utf-8").decode(obj.value),
-        );
-        let lineNumber = 0;
-        // replaces the last newline with a whitespace, in case there is one
-        if (fileContent.content.endsWith("\n")) {
-          fileContent.content = fileContent.content.replace(/\n$/, "");
-        }
-        fileContent = fileContent.content.split("\n").map((text: string) => {
-          lineNumber += 1;
-          return { line: lineNumber, text };
-        });
-        setFileContent(fileContent);
-        directoryPath.push(value.name);
-        const path = directoryPath.join(",");
-        setReadFileMode(true);
-        history.push(`${repoUrl}/repo?path=${path}`);
-        localStorage.setItem("fileContent", JSON.stringify(fileContent));
+      let fileContent = await resolveCID(value.cid);
+      let lineNumber = 0;
+      // replaces the last newline with a whitespace, in case there is one
+      if (fileContent.content.endsWith("\n")) {
+        fileContent.content = fileContent.content.replace(/\n$/, "");
+      }
+      fileContent = fileContent.content.split("\n").map((text: string) => {
+        lineNumber += 1;
+        return { line: lineNumber, text };
       });
+      setFileContent(fileContent);
+      directoryPath.push(value.name);
+      const path = directoryPath.join(",");
+      setReadFileMode(true);
+      history.push(`${repoUrl}/repo?path=${path}`);
+      localStorage.setItem("fileContent", JSON.stringify(fileContent));
     } else {
       let directoryPathArr = directoryPath;
       if (value.name === ". ." && value.type === "dotdot") {

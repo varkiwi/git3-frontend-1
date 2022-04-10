@@ -8,13 +8,18 @@ import { EChainType } from "enums/ChainType";
 interface GitState {
   gitFactory: any;
   ipfsClient: any;
+  chainType: EChainType | string;
   setChainType: (chainType: EChainType) => void;
 }
 
 export const GitContainer = createContainer<GitState>(() => {
-  const [chainType, setChainType] = useState<EChainType>(
+  const [chainType, setChainType] = useState<EChainType | string>(
     localStorage.getItem("chainType") || EChainType.MUMBAI,
   );
+
+  if (localStorage.getItem("chainType") === null) {
+    localStorage.setItem("chainType", EChainType.MUMBAI);
+  }
 
   let gitFactoryAddress;
   let rpcEndpoint;
@@ -45,6 +50,7 @@ export const GitContainer = createContainer<GitState>(() => {
   return {
     gitFactory,
     ipfsClient,
+    chainType,
     setChainType,
   };
 });

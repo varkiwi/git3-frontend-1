@@ -6,12 +6,13 @@ import {
   TimelineSeparator,
 } from "@mui/lab";
 import { Chip, Paper, Typography, Divider } from "@mui/material";
+import { Answer } from "interfaces/Answer";
 import React, { useEffect, useState } from "react";
 import { CustomizedTimeline } from "./styled";
 
 interface TimelineProps {
   issueStorage: any;
-  answers: object[];
+  answers: Array<Answer>;
 }
 
 export const Timeline: React.FC<TimelineProps> = (props) => {
@@ -36,7 +37,11 @@ export const Timeline: React.FC<TimelineProps> = (props) => {
 
   return (
     <>
-      <Chip label={issueStorage.state} color={timelineColor} />
+      <Chip
+        key={issueStorage.state}
+        label={issueStorage.state}
+        color={timelineColor}
+      />
       <CustomizedTimeline>
         <TimelineItem>
           <TimelineSeparator>

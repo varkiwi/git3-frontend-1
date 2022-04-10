@@ -1,7 +1,7 @@
 import { Box, Container, Typography } from "@mui/material";
 import { Link } from "components/Link";
 import { GitContainer } from "containers/GitContainer";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 const git3Logo = require("../../assets/img/git3Logo.png");
@@ -22,10 +22,10 @@ export const Dashboard: React.FC = () => {
   const [randomRepositories, setRandomRepositories] = useState<any[]>([]);
 
   const loadGitRepository = () => {
-    let displayRepos: RepoLinks[] = [];
+    let displayRepos: Array<string> = [];
     gitFactory
       .getRepositoryNames()
-      .then((repoNames: RepoLinks[]) => {
+      .then((repoNames: Array<string>) => {
         // if there are already more than 3 repos available, pick 3 random
         // it is not really random, since it could repeat itself, but it is currently not
         // super important :)
@@ -36,7 +36,7 @@ export const Dashboard: React.FC = () => {
         } else {
           displayRepos = repoNames;
         }
-        const resolve: any[] = [];
+        const resolve: Promise<Array<string>>[] = [];
         displayRepos.forEach((repo) =>
           resolve.push(gitFactory.getRepositoriesUserList(repo)),
         );

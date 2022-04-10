@@ -9,8 +9,9 @@ import { Controller, useForm } from "react-hook-form";
 import { ethers } from "ethers";
 import { useLocation } from "react-router-dom";
 import { NoWalletModal } from "components/NoWalletModal";
-import { IpfsBufferResult } from "interfaces/Ipfs";
+import { IpfsBufferResult, IpfsData } from "interfaces/Ipfs";
 import { Transaction } from "interfaces/Transaction";
+import { Answer } from "interfaces/Answer";
 
 interface Issue {
   opener: string;
@@ -21,22 +22,9 @@ interface Issue {
   issueNumber: number;
   title: string;
 }
-
-interface Answer {
-  author: string;
-  issueText: string;
-  issueTitle: string;
-  timestamp: number;
-}
-
 interface IssueForm {
   comment: string;
   bounty: number;
-}
-
-interface IpfsData {
-  done: boolean;
-  value: Uint8Array;
 }
 
 export const PreviewIssue: React.FC = () => {
@@ -69,7 +57,6 @@ export const PreviewIssue: React.FC = () => {
         ),
     );
     Promise.all(answers).then((data) => {
-      console.log(data);
       setAnswers(data);
     });
 
@@ -122,30 +109,21 @@ export const PreviewIssue: React.FC = () => {
 
   const postAndCloseComment = async (form: IssueForm) => {
     await postComment(form);
-    setLoading(true);
     const gitRepo = gitRepository;
-    if (+issueStorage.bounty > 0) {
-      // when there is a bounty, we have to resolve it first,
-      // before we can close it! This might change in the future or maybe should :D
-      gitRepo
-        .updateIssueState(issueStorage.issueHash, 2)
-        .then((tx: Transaction) => tx.wait())
-        .then(() => {
-          issueStorage.state = "Resolved";
-          localStorage.setItem("issue", JSON.stringify(issueStorage));
-          setLoading(false);
-        });
-    } else {
-      // there is no bounty, so we can close the issue :)
-      gitRepo
-        .updateIssueState(issueStorage.issueHash, 1)
-        .then((tx: Transaction) => tx.wait())
-        .then(() => {
-          issueStorage.state = "Closed";
-          localStorage.setItem("issue", JSON.stringify(issueStorage));
-          setLoading(false);
-        });
-    }
+    const isResolved = +issueStorage.bounty > 0;
+    // when there is a bounty, we have to resolve it first,
+    // before we can close it! This might change in the future or maybe should :D
+    gitRepo
+      .updateIssueState(issueStorage.issueHash, isResolved ? 2 : 1)
+      .then((tx: Transaction) => {
+        setLoading(true);
+        return tx.wait();
+      })
+      .then(() => {
+        issueStorage.state = isResolved ? "Resolved" : "Closed";
+        localStorage.setItem("issue", JSON.stringify(issueStorage));
+        setLoading(false);
+      });
   };
 
   const { control, handleSubmit, watch } = useForm<IssueForm>();
