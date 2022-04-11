@@ -59,8 +59,8 @@ export const Timeline: React.FC<TimelineProps> = (props) => {
           </TimelineContent>
         </TimelineItem>
         {answers.length > 0 &&
-          answers?.map((answer) => (
-            <TimelineItem key={answer.issueText}>
+          answers?.map((answer, index) => (
+            <TimelineItem key={`answer.issueText-${index}`}>
               <TimelineSeparator>
                 <TimelineDot color={timelineColor} />
                 <TimelineConnector />
