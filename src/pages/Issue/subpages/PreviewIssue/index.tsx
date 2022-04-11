@@ -36,16 +36,31 @@ export const PreviewIssue: React.FC = () => {
   const handleCloseModal = () => setOpenModal(false);
 
   const [answers, setAnswers] = useState<Array<Answer>>([]);
-  const [action, setAction] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
   const issueStorage: Issue = JSON.parse(localStorage.getItem("issue") || "{}");
-  const isCloseIssue =
-    issueStorage.opener &&
-    walletAddress &&
+
+  const isRepoOwner = walletAddress.toLowerCase() === userAddress.toLowerCase();
+  const isIssueAuthor =
     walletAddress.toLowerCase() === issueStorage.opener.toLowerCase();
+  const canResolveIssue =
+    +issueStorage.bounty > 0 &&
+    issueStorage.state !== "Resolved" &&
+    isRepoOwner;
+
+  const isCloseIssue =
+    (issueStorage.bounty === "0.0" || issueStorage.state === "Resolved") &&
+    (isIssueAuthor || isRepoOwner) &&
+    issueStorage.state !== "Closed";
+
+  let action = "";
+  if (+issueStorage.bounty > 0 && issueStorage.state === "Open") {
+    action = "resolve";
+  } else {
+    action = "close";
+  }
 
   useEffect(() => {
     const answers = issueStorage.answers.map((answer) =>
@@ -59,12 +74,6 @@ export const PreviewIssue: React.FC = () => {
     Promise.all(answers).then((data) => {
       setAnswers(data);
     });
-
-    if (+issueStorage.bounty > 0 && issueStorage.state === "Open") {
-      setAction("resolve");
-    } else {
-      setAction("close");
-    }
   }, []);
 
   const postComment = async (form: IssueForm) => {
@@ -110,7 +119,7 @@ export const PreviewIssue: React.FC = () => {
   const postAndCloseComment = async (form: IssueForm) => {
     await postComment(form);
     const gitRepo = gitRepository;
-    const isResolved = +issueStorage.bounty > 0;
+    const isResolved = action === "resolve";
     // when there is a bounty, we have to resolve it first,
     // before we can close it! This might change in the future or maybe should :D
     gitRepo
@@ -185,7 +194,7 @@ export const PreviewIssue: React.FC = () => {
             />
           </Grid>
         </Grid>
-        {isCloseIssue && (
+        {(canResolveIssue || isCloseIssue) && (
           <Button
             label={`Comment and ${action}`}
             size="small"
