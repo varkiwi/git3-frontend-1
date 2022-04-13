@@ -25,5 +25,11 @@ export const CustomizedButton = styled(LoadingButton)(
       position: static;
       margin: -2px 7px 0 0;
     }
+    .MuiButton-startIcon {
+      margin:0;
+      .MuiSvgIcon-root {
+        margin-right: 8px;
+      }
+    }
   `,
 );

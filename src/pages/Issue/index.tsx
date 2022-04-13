@@ -11,7 +11,7 @@ import loadSmartContract from "utils/utils";
 import { TableHeaders } from "interfaces/Table/TableHeaders";
 
 export const Issue: React.FC = () => {
-  const { repoUrl, gitRepository } = WalletContainer.useContainer();
+  const { repoUrl } = WalletContainer.useContainer();
   const { gitFactory, ipfsClient } = GitContainer.useContainer();
 
   const history = useHistory();
@@ -40,7 +40,7 @@ export const Issue: React.FC = () => {
     const repoName = location.pathname.slice(1).split("/")[1];
     const gitRepo = await loadSmartContract(gitFactory, userAddress, repoName);
     const issueHashes = await gitRepo.allIssues;
-    const issues = issueHashes[0].map((userCidHash: any) =>
+    const issues = issueHashes[0].map((userCidHash: string) =>
       gitRepo.issue(userCidHash),
     );
     Promise.all(issues)
@@ -94,7 +94,6 @@ export const Issue: React.FC = () => {
     isMounted = true;
     fetchIssues();
     return () => {
-      // clean up
       isMounted = false;
     };
   }, [fetchIssues]);

@@ -21,7 +21,7 @@ export const Wallet: React.FC = () => {
     gitRepository,
     setRepositoryDonations,
   } = WalletContainer.useContainer();
-  const { setChainType } = GitContainer.useContainer();
+  const { chainType, setChainType } = GitContainer.useContainer();
 
   const history = useHistory();
 
@@ -54,8 +54,11 @@ export const Wallet: React.FC = () => {
       localStorage.setItem("chainType", EChainType.GODWOKEN);
       setChainType(EChainType.GODWOKEN);
     } else {
-      localStorage.removeItem("chainType");
+      localStorage.setItem("chainType", EChainType.MUMBAI);
       setChainType(EChainType.MUMBAI);
+    }
+    if (localStorage.getItem("chainType") !== chainType) {
+      history.push("/");
     }
   };
 
@@ -63,7 +66,6 @@ export const Wallet: React.FC = () => {
     let provider: any;
     try {
       provider = await web3Modal.connect();
-      console.log(provider);
     } catch (e) {
       console.log("Could not get a wallet connection", e);
       return;
@@ -134,12 +136,7 @@ export const Wallet: React.FC = () => {
     : "Connect Wallet";
 
   const [openModal, setOpenModal] = useState(false);
-  const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
-
-  // useEffect(() => {
-  //   showModal();
-  // }, [showModal]);
 
   return (
     <>
