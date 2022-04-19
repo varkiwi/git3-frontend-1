@@ -1,8 +1,8 @@
-import { ButtonProps, Grid, Menu, MenuItem, Typography } from "@mui/material";
+import { Grid, Menu, MenuItem, Typography } from "@mui/material";
 import { Button } from "components/Button";
 import * as React from "react";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { WalletContainer } from "containers/WalletContainer";
 
 interface BranchesProps {

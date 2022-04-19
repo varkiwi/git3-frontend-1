@@ -1,15 +1,6 @@
-import {
-  ButtonProps,
-  Grid,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  OutlinedInput,
-  Typography,
-} from "@mui/material";
+import { Grid, InputAdornment, OutlinedInput, Typography } from "@mui/material";
 import { Button } from "components/Button";
 import * as React from "react";
-import AltRouteIcon from "@mui/icons-material/AltRoute";
 import TerminalOutlinedIcon from "@mui/icons-material/TerminalOutlined";
 import { CustomizedPopover } from "./styled";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
