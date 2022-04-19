@@ -1,7 +1,7 @@
 import { Popover, styled } from "@mui/material";
 
 export const CustomizedPopover = styled(Popover)(
-  ({ theme }) => `
+  () => `
     padding: "20px";
     .MuiPopover-paper {
         padding: 16px;

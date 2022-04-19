@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Box,
-  CircularProgress,
   LinearProgress,
   Paper,
   TableBody,
@@ -19,9 +18,10 @@ import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutl
 import { CodeTableRow } from "interfaces/Table/CodeTableRow";
 import { TableHeaders } from "interfaces/Table/TableHeaders";
 import { TablePaginationActions } from "./TablePaginationActions";
+
 interface TableProps {
   handleRowClick: (row: CodeTableRow) => void;
-  data: any;
+  data: Array<Object>;
   tableHeaders: TableHeaders[];
   loadingData: boolean;
   isPagination: boolean;

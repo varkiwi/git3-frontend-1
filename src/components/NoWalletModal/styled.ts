@@ -1,7 +1,7 @@
 import { Paper, styled } from "@mui/material";
 
 export const CustomizedModalContent = styled(Paper)(
-  ({ theme }) => `
+  () => `
       position: absolute;
       top: 50%;
       left: 50%;
