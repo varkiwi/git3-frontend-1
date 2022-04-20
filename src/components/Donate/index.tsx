@@ -16,7 +16,7 @@ interface SendDonateForm {
 }
 
 export const Donate: React.FC = () => {
-  const { gitRepository, setRepositoryDonations, walletAddress, web3Provider } =
+  const { gitRepository, walletAddress, web3Provider } =
     WalletContainer.useContainer();
 
   const location = useLocation();
@@ -38,9 +38,6 @@ export const Donate: React.FC = () => {
       .then(() => {
         setWaitingForTx(false);
         return gitRepository.tips;
-      })
-      .then((tips: string) => {
-        setRepositoryDonations(tips);
       });
   }, []);
 

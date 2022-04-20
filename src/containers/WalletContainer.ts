@@ -13,8 +13,6 @@ interface WalletState {
   setWeb3Provider: (web3Provider: any) => void;
   gitRepository: any;
   setGitRepository: (gitRepository: any) => void;
-  repositoryDonations: string;
-  setRepositoryDonations: (repositoryDonations: string) => void;
   repoUrl: string;
   setRepoUrl: (repoUrl: string) => void;
 }
@@ -24,7 +22,6 @@ export const WalletContainer = createContainer<WalletState>(() => {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [web3Provider, setWeb3Provider] = useState<any>("");
   const [gitRepository, setGitRepository] = useState<any>(null);
-  const [repositoryDonations, setRepositoryDonations] = useState<string>("");
   const [repoUrl, setRepoUrl] = useState<string>("");
 
   const location = useLocation();
@@ -33,6 +30,7 @@ export const WalletContainer = createContainer<WalletState>(() => {
   const loadContract = useCallback(async () => {
     const userAddress = location.pathname.slice(1).split("/")[0];
     const repoName = location.pathname.slice(1).split("/")[1];
+    if (!repoName || !userAddress) return;
     const gitRepo = await loadSmartContract(gitFactory, userAddress, repoName);
     setGitRepository(gitRepo);
   }, []);
@@ -50,8 +48,6 @@ export const WalletContainer = createContainer<WalletState>(() => {
     setWeb3Provider,
     gitRepository,
     setGitRepository,
-    repositoryDonations,
-    setRepositoryDonations,
     repoUrl,
     setRepoUrl,
   };

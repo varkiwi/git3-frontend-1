@@ -19,7 +19,7 @@ export const Dashboard: React.FC = () => {
   const { gitFactory } = GitContainer.useContainer();
 
   const history = useHistory();
-  const [randomRepositories, setRandomRepositories] = useState<any[]>([]);
+  const [randomRepositories, setRandomRepositories] = useState<RepoLinks[]>([]);
 
   const loadGitRepository = () => {
     let displayRepos: Array<string> = [];
@@ -42,7 +42,7 @@ export const Dashboard: React.FC = () => {
         );
         return Promise.all(resolve);
       })
-      .then((data: any) => {
+      .then((data: Array<Array<string>>) => {
         const whatsNext: Array<RepoLinks> = [];
         data.map((item: Array<string>, index: number) => {
           whatsNext.push({

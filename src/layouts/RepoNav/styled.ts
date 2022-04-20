@@ -1,5 +1,5 @@
 import { TabList } from "@mui/lab";
-import { Paper, styled } from "@mui/material";
+import { styled } from "@mui/material";
 
 export const CustomizedTabList = styled(TabList)(
   ({ theme }) => `
@@ -22,7 +22,7 @@ export const CustomizedTabList = styled(TabList)(
 );
 
 export const RepoNavHeader = styled("div")(
-  ({ theme }) => `
+  () => `
     display:flex;
     justify-content:space-between;
   `,
