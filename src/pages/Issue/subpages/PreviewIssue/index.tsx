@@ -40,7 +40,8 @@ export const PreviewIssue: React.FC = () => {
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
-  const issueStorage: Issue = JSON.parse(localStorage.getItem("issue") || "{}");
+  // const issueStorage: Issue = JSON.parse(localStorage.getItem("issue") || "{}");
+  const [issueStorage, setIssueStorage] = useState<Issue>(JSON.parse(localStorage.getItem("issue") || "{}"));
 
   const isRepoOwner = walletAddress.toLowerCase() === userAddress.toLowerCase();
   const isIssueAuthor =
@@ -51,7 +52,7 @@ export const PreviewIssue: React.FC = () => {
     isRepoOwner;
 
   const isCloseIssue =
-    (issueStorage.bounty === "0.0" || issueStorage.state === "Resolved") &&
+    (issueStorage.bounty === "0.0" || issueStorage.state.includes("Resolved")) &&
     (isIssueAuthor || isRepoOwner) &&
     issueStorage.state !== "Closed";
 
@@ -77,43 +78,48 @@ export const PreviewIssue: React.FC = () => {
   }, []);
 
   const postComment = async (form: IssueForm) => {
-    if (form.comment.length > 0) {
-      const gitRepo = gitRepository;
-      if (web3Provider === "") {
-        setOpenModal(true);
-        return;
+    return new Promise((resolve) => {
+      if (form.comment.length > 0) {
+        const gitRepo = gitRepository;
+        if (web3Provider === "") {
+          setOpenModal(true);
+          return;
+        }
+        const issue = {
+          issueText: form.comment,
+          issueTitle: "",
+          timestamp: Date.now(),
+          author: userAddress,
+        };
+        let cid: string;
+        ipfsClient
+          .add(Buffer.from(JSON.stringify(issue)))
+          .then((answer: IpfsBufferResult) => {
+            cid = answer.path;
+            const overrides = {
+              value: ethers.utils.parseEther(form.bounty.toString()),
+            };
+            return gitRepo.appendAnswerToIssue(
+              issueStorage.issueHash,
+              cid,
+              overrides,
+            );
+          })
+          .then((tx: Transaction) => {
+            setLoading(true);
+            return tx.wait();
+          })
+          .then((result: any) => {
+            setLoading(false);
+            setAnswers([...answers, issue]);
+            issueStorage.answers.push([cid, result.from]);
+            localStorage.setItem("issue", JSON.stringify(issueStorage));
+            resolve(true);
+          });
+      } else {
+        resolve(true);
       }
-      const issue = {
-        issueText: form.comment,
-        issueTitle: "",
-        timestamp: Date.now(),
-        author: userAddress,
-      };
-      let cid: string;
-      ipfsClient
-        .add(Buffer.from(JSON.stringify(issue)))
-        .then((answer: IpfsBufferResult) => {
-          cid = answer.path;
-          const overrides = {
-            value: ethers.utils.parseEther(form.bounty.toString()),
-          };
-          return gitRepo.appendAnswerToIssue(
-            issueStorage.issueHash,
-            cid,
-            overrides,
-          );
-        })
-        .then((tx: Transaction) => {
-          setLoading(true);
-          return tx.wait();
-        })
-        .then((result: any) => {
-          setLoading(false);
-          setAnswers([...answers, issue]);
-          issueStorage.answers.push([cid, result.from]);
-          localStorage.setItem("issue", JSON.stringify(issueStorage));
-        });
-    }
+    });
   };
 
   const postAndCloseComment = async (form: IssueForm) => {
