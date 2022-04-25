@@ -40,7 +40,8 @@ export const PreviewIssue: React.FC = () => {
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
-  const issueStorage: Issue = JSON.parse(localStorage.getItem("issue") || "{}");
+//   const issueStorage: Issue = JSON.parse(localStorage.getItem("issue") || "{}");
+  const [issueStorage, setIssueStorage] = useState<Issue>(JSON.parse(localStorage.getItem("issue") || "{}"));
 
   const isRepoOwner = walletAddress.toLowerCase() === userAddress.toLowerCase();
   const isIssueAuthor =
