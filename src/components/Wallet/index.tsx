@@ -11,6 +11,10 @@ import { GitContainer } from "containers/GitContainer";
 import { EChainType } from "enums/ChainType";
 import { useHistory } from "react-router-dom";
 
+interface Provider {
+  chainId: string;
+}
+
 export const Wallet: React.FC = () => {
   const {
     walletActive,
@@ -19,7 +23,6 @@ export const Wallet: React.FC = () => {
     setWalletAddress,
     setWeb3Provider,
     gitRepository,
-    setRepositoryDonations,
   } = WalletContainer.useContainer();
   const { chainType, setChainType } = GitContainer.useContainer();
 
@@ -49,7 +52,7 @@ export const Wallet: React.FC = () => {
     theme: "dark",
   });
 
-  const changeChainType = (provider: any) => {
+  const changeChainType = (provider: Provider) => {
     if (provider.chainId === process.env.CHAINID_GODWOKEN) {
       localStorage.setItem("chainType", EChainType.GODWOKEN);
       setChainType(EChainType.GODWOKEN);
@@ -85,7 +88,6 @@ export const Wallet: React.FC = () => {
       setWeb3Provider(web3Provider);
     } else {
       setOpenModal(true);
-      console.log("error gosc");
       return;
     }
 
@@ -98,9 +100,6 @@ export const Wallet: React.FC = () => {
       } else {
         console.log(`Accounts changed: ${accounts}`);
         setWalletAddress(provider.selectedAddress);
-        gitRepo.tips.then((tips: any) => {
-          setRepositoryDonations(tips);
-        });
       }
     });
     // Subscribe to chainId change

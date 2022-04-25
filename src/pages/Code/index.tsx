@@ -1,6 +1,12 @@
 import { Container, Grid } from "@mui/material";
 import { File } from "components/File";
-import React, { useCallback, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Table } from "components/Table";
 import { CodeTableRow } from "interfaces/Table/CodeTableRow";
 import { useLocation, useHistory } from "react-router-dom";
@@ -38,7 +44,7 @@ export const Code: React.FC = () => {
   const [fileContent, setFileContent] = useState<Array<FileContent>>([]);
   const [readFileMode, setReadFileMode] = useState<boolean>(false);
   const [remoteDatabase, setRemoteDatabase] = useState<RepoFiles | null>(null);
-  const [directoryPath, setDirectoryPath] = useState<any>([]);
+  const [directoryPath, setDirectoryPath] = useState<Array<string>>([]);
   const [currentBranchName, setCurrentBranchName] = useState<string>("main");
   const [loadingData, setLoadingData] = useState<boolean>(true);
 
@@ -93,11 +99,11 @@ export const Code: React.FC = () => {
   const loadRemoteFiles = async (
     branchName: string,
     gitRepo: any,
-    pathParams: any,
+    pathParams: Array<string>,
   ) => {
     gitRepo
       .getBranch(branchName)
-      .then((branch: any) => {
+      .then((branch: Array<any>) => {
         if (branch[0][0] === false) {
           throw new Error("Branch is not active");
         }
@@ -126,7 +132,11 @@ export const Code: React.FC = () => {
   };
 
   const loadGitRepository = useCallback(
-    async (repoName: string, userAddress: string, pathParams: any) => {
+    async (
+      repoName: string,
+      userAddress: string,
+      pathParams: Array<string> | undefined,
+    ) => {
       const gitRepo = await loadSmartContract(
         gitFactory,
         userAddress,
@@ -138,12 +148,30 @@ export const Code: React.FC = () => {
           const currentBranchName =
             localStorage.getItem("currentBranchName") || "main";
           setCurrentBranchName(currentBranchName);
-          loadRemoteFiles(currentBranchName, gitRepo, pathParams);
+          loadRemoteFiles(
+            currentBranchName,
+            gitRepo,
+            pathParams as Array<string>,
+          );
         });
       }
     },
     [],
   );
+
+  const firstUpdate = useRef(true);
+  useLayoutEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+
+    if (!params?.get("path")) {
+      isMounted = true;
+      setReadFileMode(false);
+      initRepositoryActions();
+    }
+  }, [location]);
 
   useEffect(() => {
     isMounted = true;
@@ -171,7 +199,7 @@ export const Code: React.FC = () => {
     changeDirectory(row);
   };
 
-  const changeDirectory = async (value: any) => {
+  const changeDirectory = async (value: CodeTableRow) => {
     /**
      * Function triggered whenever a user clicks on of the rows in order to load a file or
      * change directory.
@@ -211,7 +239,7 @@ export const Code: React.FC = () => {
     }
   };
 
-  const emitFolderNavClick = (directoryPathArr: any) => {
+  const emitFolderNavClick = (directoryPathArr: Array<string>) => {
     setDirectoryPath(directoryPathArr);
     const path = directoryPathArr.join(",");
     setReadFileMode(false);

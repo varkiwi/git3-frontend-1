@@ -49,7 +49,7 @@ export const Search: React.FC = () => {
           filteredRepoNames[0],
         ]);
       })
-      .then(([userList, filteredRepoName]: any) => {
+      .then(([userList, filteredRepoName]: Array<any>) => {
         const resultArray: Array<SearchOptions> = [];
         userList?.map((userAddress: string) => {
           resultArray.push({
