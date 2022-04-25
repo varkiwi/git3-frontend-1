@@ -51,7 +51,7 @@ export const PreviewIssue: React.FC = () => {
     isRepoOwner;
 
   const isCloseIssue =
-    (issueStorage.bounty === "0.0" || issueStorage.state === "Resolved") &&
+    (issueStorage.bounty === "0.0" || issueStorage.state.includes("Resolved")) &&
     (isIssueAuthor || isRepoOwner) &&
     issueStorage.state !== "Closed";
 
