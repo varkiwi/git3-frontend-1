@@ -21,6 +21,7 @@ export const Donate: React.FC = () => {
 
   const location = useLocation();
   const userAddress = location.pathname.slice(1).split("/")[0];
+
   const { control, handleSubmit } = useForm<SendDonateForm>();
   const [waitingForTx, setWaitingForTx] = useState<boolean>(false);
 
@@ -28,7 +29,8 @@ export const Donate: React.FC = () => {
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
-  const collectTips = useCallback(async () => {
+  const collectTips = async () => {
+    gitRepository.web3Signer = web3Provider.getSigner();
     gitRepository
       .collectTips()
       .then((transaction: Transaction) => {
@@ -39,7 +41,7 @@ export const Donate: React.FC = () => {
         setWaitingForTx(false);
         return gitRepository.tips;
       });
-  }, []);
+  };
 
   const sendDonation = async (form: SendDonateForm) => {
     // const currency = switch1 ? 'USD' : 'Matic';
